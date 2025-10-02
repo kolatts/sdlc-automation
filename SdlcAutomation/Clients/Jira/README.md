@@ -10,6 +10,8 @@ Set environment variables:
 
 ## Usage
 
+### Direct Usage
+
 ```csharp
 using SdlcAutomation.Clients.Jira;
 
@@ -36,8 +38,35 @@ var issue = await client.CreateIssueAsync(
     description: "Bug description");
 ```
 
+### Dependency Injection (for API/Web apps)
+
+```csharp
+using SdlcAutomation.Clients.Jira;
+
+// In Startup.cs or Program.cs
+services.AddJiraClient(); // Uses JIRA_BASE_URL and JIRA_PAT env vars
+
+// Or with explicit values
+services.AddJiraClient("https://jira.example.com", "your-token");
+
+// Or with custom env var names
+services.AddJiraClient("CUSTOM_JIRA_URL", "CUSTOM_JIRA_TOKEN");
+
+// Then inject in controllers/services
+public class MyService
+{
+    private readonly JiraApiClient _jiraClient;
+
+    public MyService(JiraApiClient jiraClient)
+    {
+        _jiraClient = jiraClient;
+    }
+}
+```
+
 ## Notes
 
 - Uses camelCase JSON naming policy
 - No external dependencies beyond .NET standard libraries
 - Compatible with JIRA Data Center 8.x and 9.x
+- Includes DataAnnotations validation for command requests

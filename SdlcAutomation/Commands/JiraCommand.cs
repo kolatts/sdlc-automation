@@ -1,5 +1,6 @@
 using System.CommandLine;
 using SdlcAutomation.Clients.Jira;
+using SdlcAutomation.Clients.Jira.Models;
 using Spectre.Console;
 
 namespace SdlcAutomation.Commands;
@@ -41,6 +42,27 @@ public class JiraCommand : BaseCommand
     {
         try
         {
+            // Create and validate request object
+            var request = new CreateIssueCommandRequest
+            {
+                ProjectKey = project,
+                IssueType = type,
+                Summary = summary,
+                Description = description
+            };
+
+            // Validate request
+            var validationResults = request.Validate();
+            if (validationResults.Any())
+            {
+                WriteError("Validation failed:");
+                foreach (var error in validationResults)
+                {
+                    WriteError($"  • {error.ErrorMessage}");
+                }
+                return;
+            }
+
             var baseUrl = Environment.GetEnvironmentVariable("JIRA_BASE_URL");
             if (string.IsNullOrWhiteSpace(baseUrl))
             {
@@ -53,15 +75,15 @@ public class JiraCommand : BaseCommand
             
             using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
             
-            WriteInfo($"Creating {type} in project {project}...");
+            WriteInfo($"Creating {request.IssueType} in project {request.ProjectKey}...");
             
             var response = await client.CreateIssueAsync(
-                projectKey: project,
-                issueTypeName: type,
-                summary: summary,
-                description: description);
+                projectKey: request.ProjectKey,
+                issueTypeName: request.IssueType,
+                summary: request.Summary,
+                description: request.Description);
 
-            WriteSuccess($"Created {type}: {response.Key}");
+            WriteSuccess($"Created {request.IssueType}: {response.Key}");
             if (!string.IsNullOrEmpty(response.Self))
             {
                 WriteInfo($"URL: {response.Self}");
