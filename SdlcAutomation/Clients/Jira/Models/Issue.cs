@@ -10,22 +10,26 @@ public class Issue
     /// <summary>
     /// Issue ID (read-only, populated by JIRA)
     /// </summary>
+    [Display(Name = "Issue ID")]
     public string? Id { get; set; }
     
     /// <summary>
     /// Issue key (read-only, populated by JIRA)
     /// </summary>
+    [Display(Name = "Issue Key")]
     public string? Key { get; set; }
     
     /// <summary>
     /// Issue URL (read-only, populated by JIRA)
     /// </summary>
+    [Display(Name = "Issue URL")]
     public string? Self { get; set; }
     
     /// <summary>
     /// Issue fields (required for creation, populated for retrieval)
     /// </summary>
     [Required(ErrorMessage = "Fields are required")]
+    [Display(Name = "Issue Fields")]
     public IssueFields Fields { get; set; } = new IssueFields();
 
     /// <summary>

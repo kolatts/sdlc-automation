@@ -10,22 +10,26 @@ public class IssueType
     /// <summary>
     /// Issue type ID (read-only, populated by JIRA)
     /// </summary>
+    [Display(Name = "Type ID")]
     public string? Id { get; set; }
     
     /// <summary>
     /// Issue type name (required for creation if specified by name)
     /// </summary>
     [MinLength(1, ErrorMessage = "Issue type name cannot be empty")]
+    [Display(Name = "Type")]
     public string? Name { get; set; }
     
     /// <summary>
     /// Issue type description (read-only)
     /// </summary>
+    [Display(Name = "Type Description")]
     public string? Description { get; set; }
     
     /// <summary>
     /// Whether this is a subtask type (read-only)
     /// </summary>
+    [Display(Name = "Is Subtask")]
     public bool Subtask { get; set; }
 
     /// <summary>
