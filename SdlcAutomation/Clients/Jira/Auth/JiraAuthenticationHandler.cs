@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
-using System.Text;
 
-namespace JiraClient.Auth;
+namespace SdlcAutomation.Clients.Jira.Auth;
 
 /// <summary>
 /// Handles authentication for JIRA Data Center using Bearer token (PAT)
@@ -34,9 +33,7 @@ public class JiraAuthenticationHandler : DelegatingHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        // JIRA Data Center supports Bearer token authentication with PAT
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-        
         return base.SendAsync(request, cancellationToken);
     }
 }
