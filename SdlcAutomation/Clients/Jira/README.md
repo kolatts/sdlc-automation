@@ -10,14 +10,40 @@ Set environment variables:
 
 ## Usage
 
-### Direct Usage
+### Using the Unified Issue Model
+
+The `Issue` model can be used for both creating and retrieving issues:
 
 ```csharp
 using SdlcAutomation.Clients.Jira;
+using SdlcAutomation.Clients.Jira.Models;
 
 // Create client
 using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
 
+// Create an issue using the unified model
+var issue = new Issue
+{
+    Fields = new IssueFields
+    {
+        Project = new Project { Key = "PROJ" },
+        IssueType = new IssueType { Name = "Story" },
+        Summary = "Story title",
+        Description = "Story description"
+    }
+};
+
+// The model validates automatically
+var createdIssue = await client.CreateIssueAsync(issue);
+
+// Retrieve an issue - same model
+var retrievedIssue = await client.GetIssueAsync("PROJ-123");
+Console.WriteLine($"Summary: {retrievedIssue.Fields?.Summary}");
+```
+
+### Convenience Methods
+
+```csharp
 // Create user story
 var story = await client.CreateUserStoryAsync(
     projectKey: "PROJ",
@@ -31,7 +57,7 @@ var test = await client.CreateTestItemAsync(
     description: "Test description");
 
 // Create any issue type
-var issue = await client.CreateIssueAsync(
+var bug = await client.CreateIssueAsync(
     projectKey: "PROJ",
     issueTypeName: "Bug",
     summary: "Bug title",
@@ -64,9 +90,16 @@ public class MyService
 }
 ```
 
+## Model Features
+
+- **Unified Model**: Same `Issue` class for create and read operations
+- **DataAnnotations Validation**: Built-in validation with clear error messages
+- **Bidirectional**: Models work seamlessly for both API requests and responses
+- **Extensible**: Support for custom fields via `CustomFields` dictionary
+
 ## Notes
 
 - Uses camelCase JSON naming policy
 - No external dependencies beyond .NET standard libraries
 - Compatible with JIRA Data Center 8.x and 9.x
-- Includes DataAnnotations validation for command requests
+- Full DataAnnotations validation on all models

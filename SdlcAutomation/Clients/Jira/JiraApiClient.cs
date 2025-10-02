@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 using System.Text.Json;
 using SdlcAutomation.Clients.Jira.Auth;
@@ -53,41 +54,27 @@ public class JiraApiClient : IDisposable
         return new JiraApiClient(baseUrl, token);
     }
 
-    public async Task<CreateIssueResponse> CreateIssueAsync(
-        string projectKey,
-        string issueTypeName,
-        string summary,
-        string? description = null,
-        Dictionary<string, object>? additionalFields = null,
+    public async Task<Issue> CreateIssueAsync(
+        Issue issue,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(projectKey))
-            throw new ArgumentException("Project key cannot be null or empty", nameof(projectKey));
+        if (issue == null)
+            throw new ArgumentNullException(nameof(issue));
 
-        if (string.IsNullOrWhiteSpace(issueTypeName))
-            throw new ArgumentException("Issue type name cannot be null or empty", nameof(issueTypeName));
-
-        if (string.IsNullOrWhiteSpace(summary))
-            throw new ArgumentException("Summary cannot be null or empty", nameof(summary));
-
-        var fields = new IssueFields
+        // Validate the issue
+        var validationResults = issue.Validate();
+        if (validationResults.Any())
         {
-            Project = new Project { Key = projectKey },
-            IssueType = new IssueType { Name = issueTypeName },
-            Summary = summary,
-            Description = description
-        };
-
-        if (additionalFields != null && additionalFields.Count > 0)
-        {
-            fields.CustomFields = new Dictionary<string, object>(additionalFields);
+            var errors = string.Join("; ", validationResults.Select(v => v.ErrorMessage));
+            throw new ValidationException($"Issue validation failed: {errors}");
         }
 
-        var request = new CreateIssueRequest(fields);
+        // Create request payload with just the fields
+        var requestPayload = new { fields = issue.Fields };
 
         var response = await _httpClient.PostAsJsonAsync(
             "/rest/api/2/issue",
-            request,
+            requestPayload,
             _jsonOptions,
             cancellationToken);
 
@@ -113,7 +100,7 @@ public class JiraApiClient : IDisposable
                 $"Failed to create issue. Status: {response.StatusCode}. Error: {errorMessage}");
         }
 
-        var result = await response.Content.ReadFromJsonAsync<CreateIssueResponse>(_jsonOptions, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<Issue>(_jsonOptions, cancellationToken);
         
         if (result == null)
             throw new InvalidOperationException("Failed to deserialize create issue response");
@@ -121,7 +108,30 @@ public class JiraApiClient : IDisposable
         return result;
     }
 
-    public async Task<CreateIssueResponse> CreateUserStoryAsync(
+    public async Task<Issue> CreateIssueAsync(
+        string projectKey,
+        string issueTypeName,
+        string summary,
+        string? description = null,
+        Dictionary<string, object>? additionalFields = null,
+        CancellationToken cancellationToken = default)
+    {
+        var issue = new Issue
+        {
+            Fields = new IssueFields
+            {
+                Project = new Project { Key = projectKey },
+                IssueType = new IssueType { Name = issueTypeName },
+                Summary = summary,
+                Description = description,
+                CustomFields = additionalFields
+            }
+        };
+
+        return await CreateIssueAsync(issue, cancellationToken);
+    }
+
+    public async Task<Issue> CreateUserStoryAsync(
         string projectKey,
         string summary,
         string? description = null,
@@ -131,7 +141,7 @@ public class JiraApiClient : IDisposable
         return await CreateIssueAsync(projectKey, "Story", summary, description, additionalFields, cancellationToken);
     }
 
-    public async Task<CreateIssueResponse> CreateTestItemAsync(
+    public async Task<Issue> CreateTestItemAsync(
         string projectKey,
         string summary,
         string? description = null,

@@ -42,17 +42,20 @@ public class JiraCommand : BaseCommand
     {
         try
         {
-            // Create and validate request object
-            var request = new CreateIssueCommandRequest
+            // Create issue using the unified model
+            var issue = new Issue
             {
-                ProjectKey = project,
-                IssueType = type,
-                Summary = summary,
-                Description = description
+                Fields = new IssueFields
+                {
+                    Project = new Project { Key = project },
+                    IssueType = new IssueType { Name = type },
+                    Summary = summary,
+                    Description = description
+                }
             };
 
-            // Validate request
-            var validationResults = request.Validate();
+            // Validate the issue
+            var validationResults = issue.Validate();
             if (validationResults.Any())
             {
                 WriteError("Validation failed:");
@@ -75,18 +78,14 @@ public class JiraCommand : BaseCommand
             
             using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
             
-            WriteInfo($"Creating {request.IssueType} in project {request.ProjectKey}...");
+            WriteInfo($"Creating {type} in project {project}...");
             
-            var response = await client.CreateIssueAsync(
-                projectKey: request.ProjectKey,
-                issueTypeName: request.IssueType,
-                summary: request.Summary,
-                description: request.Description);
+            var createdIssue = await client.CreateIssueAsync(issue);
 
-            WriteSuccess($"Created {request.IssueType}: {response.Key}");
-            if (!string.IsNullOrEmpty(response.Self))
+            WriteSuccess($"Created {type}: {createdIssue.Key}");
+            if (!string.IsNullOrEmpty(createdIssue.Self))
             {
-                WriteInfo($"URL: {response.Self}");
+                WriteInfo($"URL: {createdIssue.Self}");
             }
         }
         catch (InvalidOperationException ex)
