@@ -36,7 +36,7 @@ class Program
             
             // Example 2: Query all features
             Console.WriteLine("\n=== Querying Features ===");
-            var features = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Feature);
+            var features = await client.QueryWorkItemsByTypeAsync(WorkItemType.Feature);
             Console.WriteLine($"Found {features.Count()} features");
             foreach (var feature in features.Take(5))
             {
@@ -45,17 +45,17 @@ class Program
             
             // Example 3: Query all epics
             Console.WriteLine("\n=== Querying Epics ===");
-            var epics = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Epic);
+            var epics = await client.QueryWorkItemsByTypeAsync(WorkItemType.Epic);
             Console.WriteLine($"Found {epics.Count()} epics");
             
             // Example 4: Query stories
             Console.WriteLine("\n=== Querying User Stories ===");
-            var stories = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Story);
+            var stories = await client.QueryWorkItemsByTypeAsync(WorkItemType.Story);
             Console.WriteLine($"Found {stories.Count()} stories");
             
             // Example 5: Query tasks
             Console.WriteLine("\n=== Querying Tasks ===");
-            var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Task);
+            var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemType.Task);
             Console.WriteLine($"Found {tasks.Count()} tasks");
             
             // Example 6: Get multiple work items
@@ -118,19 +118,102 @@ class Program
 
 ```csharp
 // Features
-var features = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Feature);
+var features = await client.QueryWorkItemsByTypeAsync(WorkItemType.Feature);
 
 // Epics
-var epics = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Epic);
+var epics = await client.QueryWorkItemsByTypeAsync(WorkItemType.Epic);
 
 // User Stories
-var stories = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Story);
+var stories = await client.QueryWorkItemsByTypeAsync(WorkItemType.Story);
 
 // Tasks
-var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Task);
+var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemType.Task);
 
 // Custom types (e.g., Bug)
 var bugs = await client.QueryWorkItemsByTypeAsync("Bug");
+```
+
+## Working with Simplified Work Item Models
+
+```csharp
+using SdlcAutomation.AzureDevOps.Models;
+
+// Get a single work item as a model
+var model = await client.GetWorkItemModelAsync(123);
+Console.WriteLine($"Title: {model.Title}");
+Console.WriteLine($"Description: {model.Description}");
+Console.WriteLine($"Acceptance Criteria: {model.AcceptanceCriteria}");
+Console.WriteLine($"Assigned To: {model.AssignedTo}");
+Console.WriteLine($"Created: {model.CreatedDate}");
+Console.WriteLine($"Changed: {model.ChangedDate}");
+
+// Load with children and parents
+var options = new WorkItemLoadOptions
+{
+    LoadChildren = true,
+    LoadParents = true
+};
+
+var modelWithRelations = await client.GetWorkItemModelAsync(123, options);
+
+if (modelWithRelations.Children != null)
+{
+    Console.WriteLine($"Children ({modelWithRelations.Children.Count}):");
+    foreach (var child in modelWithRelations.Children)
+    {
+        Console.WriteLine($"  - [{child.Id}] {child.Title}");
+    }
+}
+
+if (modelWithRelations.Parents != null)
+{
+    Console.WriteLine($"Parents ({modelWithRelations.Parents.Count}):");
+    foreach (var parent in modelWithRelations.Parents)
+    {
+        Console.WriteLine($"  - [{parent.Id}] {parent.Title}");
+    }
+}
+
+// Load with commits and pull requests
+var fullOptions = new WorkItemLoadOptions
+{
+    LoadChildren = true,
+    LoadParents = true,
+    LoadCommits = true,
+    LoadPullRequests = true
+};
+
+var fullModel = await client.GetWorkItemModelAsync(123, fullOptions);
+
+if (fullModel.Commits != null)
+{
+    Console.WriteLine($"Commits ({fullModel.Commits.Count}):");
+    foreach (var commit in fullModel.Commits)
+    {
+        Console.WriteLine($"  - {commit.CommitId}: {commit.Comment}");
+    }
+}
+
+if (fullModel.PullRequests != null)
+{
+    Console.WriteLine($"Pull Requests ({fullModel.PullRequests.Count}):");
+    foreach (var pr in fullModel.PullRequests)
+    {
+        Console.WriteLine($"  - [{pr.PullRequestId}] {pr.Title}");
+    }
+}
+
+// Or use the convenience property for all options
+var allData = await client.GetWorkItemModelAsync(123, WorkItemLoadOptions.All);
+
+// Query multiple work items as models
+var featureModels = await client.QueryWorkItemModelsByTypeAsync(WorkItemType.Feature, options);
+foreach (var feature in featureModels)
+{
+    Console.WriteLine($"Feature: {feature.Title}");
+    Console.WriteLine($"  State: {feature.State}");
+    Console.WriteLine($"  Children: {feature.Children?.Count ?? 0}");
+}
 ```
 
 ## Updating Work Items

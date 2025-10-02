@@ -1,27 +1,33 @@
+using System.ComponentModel;
+
 namespace SdlcAutomation.AzureDevOps;
 
 /// <summary>
-/// Constants for common Azure DevOps work item types
+/// Common Azure DevOps work item types
 /// </summary>
-public static class WorkItemTypes
+public enum WorkItemType
 {
     /// <summary>
     /// Feature work item type
     /// </summary>
-    public const string Feature = "Feature";
+    [Description("Feature")]
+    Feature,
 
     /// <summary>
     /// Epic work item type
     /// </summary>
-    public const string Epic = "Epic";
+    [Description("Epic")]
+    Epic,
 
     /// <summary>
     /// User Story work item type
     /// </summary>
-    public const string Story = "User Story";
+    [Description("User Story")]
+    Story,
 
     /// <summary>
     /// Task work item type
     /// </summary>
-    public const string Task = "Task";
+    [Description("Task")]
+    Task
 }

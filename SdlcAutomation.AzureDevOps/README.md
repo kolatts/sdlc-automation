@@ -67,14 +67,53 @@ var workItems = await client.GetWorkItemsAsync(ids);
 ### Query Work Items by Type
 
 ```csharp
-// Using constants
-var features = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Feature);
-var epics = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Epic);
-var stories = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Story);
-var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemTypes.Task);
+// Using enum
+var features = await client.QueryWorkItemsByTypeAsync(WorkItemType.Feature);
+var epics = await client.QueryWorkItemsByTypeAsync(WorkItemType.Epic);
+var stories = await client.QueryWorkItemsByTypeAsync(WorkItemType.Story);
+var tasks = await client.QueryWorkItemsByTypeAsync(WorkItemType.Task);
 
 // Or using string literals
 var customItems = await client.QueryWorkItemsByTypeAsync("Bug");
+```
+
+### Query Work Items as Simplified Models
+
+```csharp
+using SdlcAutomation.AzureDevOps.Models;
+
+// Get work items as simplified models
+var options = new WorkItemLoadOptions
+{
+    LoadChildren = true,
+    LoadParents = true,
+    LoadCommits = true,
+    LoadPullRequests = true
+};
+
+var features = await client.QueryWorkItemModelsByTypeAsync(WorkItemType.Feature, options);
+
+foreach (var feature in features)
+{
+    Console.WriteLine($"ID: {feature.Id}");
+    Console.WriteLine($"Title: {feature.Title}");
+    Console.WriteLine($"Description: {feature.Description}");
+    Console.WriteLine($"Assigned To: {feature.AssignedTo}");
+    Console.WriteLine($"Created: {feature.CreatedDate}");
+    
+    if (feature.Children != null)
+    {
+        Console.WriteLine($"Children: {feature.Children.Count}");
+    }
+    
+    if (feature.Commits != null)
+    {
+        Console.WriteLine($"Commits: {feature.Commits.Count}");
+    }
+}
+
+// Or use predefined options
+var allFeatures = await client.QueryWorkItemModelsByTypeAsync(WorkItemType.Feature, WorkItemLoadOptions.All);
 ```
 
 ### Update a Work Item
@@ -92,12 +131,20 @@ var updated = await client.UpdateWorkItemAsync(123, fields);
 
 ## Work Item Types
 
-The library provides constants for common work item types:
+The library provides an enum for common work item types with Description attributes:
 
-- `WorkItemTypes.Feature` - "Feature"
-- `WorkItemTypes.Epic` - "Epic"
-- `WorkItemTypes.Story` - "User Story"
-- `WorkItemTypes.Task` - "Task"
+- `WorkItemType.Feature` - "Feature"
+- `WorkItemType.Epic` - "Epic"
+- `WorkItemType.Story` - "User Story"
+- `WorkItemType.Task` - "Task"
+
+Use the `GetDescription()` extension method to get the string value:
+
+```csharp
+using SdlcAutomation.AzureDevOps.Extensions;
+
+var typeString = WorkItemType.Feature.GetDescription(); // Returns "Feature"
+```
 
 ## Error Handling
 
