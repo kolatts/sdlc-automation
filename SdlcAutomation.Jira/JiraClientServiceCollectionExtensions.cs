@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SdlcAutomation.Clients.Jira;
+namespace SdlcAutomation.Jira;
 
 /// <summary>
 /// Extension methods for adding JIRA client to IServiceCollection

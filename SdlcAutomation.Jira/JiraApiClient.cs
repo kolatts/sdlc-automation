@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 using System.Text.Json;
-using SdlcAutomation.Clients.Jira.Auth;
-using SdlcAutomation.Clients.Jira.Models;
+using SdlcAutomation.Jira.Auth;
+using SdlcAutomation.Jira.Models;
 
-namespace SdlcAutomation.Clients.Jira;
+namespace SdlcAutomation.Jira;
 
 /// <summary>
 /// Client for interacting with JIRA Data Center REST API

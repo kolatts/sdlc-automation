@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SdlcAutomation.Clients.Jira.Models;
+namespace SdlcAutomation.Jira.Models;
 
 /// <summary>
 /// Represents a JIRA user

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace SdlcAutomation.Clients.Jira.Models;
+namespace SdlcAutomation.Jira.Models;
 
 /// <summary>
 /// Represents the fields of a JIRA issue. Can be used for both creating and retrieving issues.

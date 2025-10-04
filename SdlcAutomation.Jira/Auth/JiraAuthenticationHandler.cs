@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 
-namespace SdlcAutomation.Clients.Jira.Auth;
+namespace SdlcAutomation.Jira.Auth;
 
 /// <summary>
 /// Handles authentication for JIRA Data Center using Bearer token (PAT)
