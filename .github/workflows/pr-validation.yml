@@ -11,7 +11,7 @@
 #
 # Triggers:
 # - Runs on pull request events (opened, synchronized, reopened)
-# - Runs on pushes to pull request branches
+# - Runs on pushes to main branch
 
 name: PR Validation
 
@@ -22,7 +22,7 @@ name: PR Validation
       - develop
   push:
     branches:
-      - '**'
+      - main
     paths-ignore:
       - '**.md'
       - 'LICENSE'
