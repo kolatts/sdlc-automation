@@ -1,0 +1,50 @@
+# PR Validation Workflow
+#
+# This workflow automatically validates pull requests to ensure
+# the build completes successfully.
+#
+# Setup Instructions:
+# 1. This workflow runs automatically on all pull requests
+# 2. No additional configuration or secrets are required
+# 3. The workflow validates that the .NET solution builds successfully
+# 4. On failure, check the workflow run logs for detailed build errors
+#
+# Triggers:
+# - Runs on pull request events (opened, synchronized, reopened)
+# - Runs on pushes to main branch
+
+name: PR Validation
+
+'on':
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+
+jobs:
+  build:
+    name: Build and Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SdlcAutomation.sln
+
+      - name: Build solution
+        run: |
+          dotnet build SdlcAutomation.sln \
+            --configuration Release --no-restore
