@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdlcAutomation", "SdlcAutom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdlcAutomation.AzureDevOps", "SdlcAutomation.AzureDevOps\SdlcAutomation.AzureDevOps.csproj", "{D5D92705-166D-4FE8-915A-3F359CC649A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdlcAutomation.Jira", "SdlcAutomation.Jira\SdlcAutomation.Jira.csproj", "{A4ECA811-9570-428E-9943-A61B965F6ADC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{D5D92705-166D-4FE8-915A-3F359CC649A1}.Release|x64.Build.0 = Release|Any CPU
 		{D5D92705-166D-4FE8-915A-3F359CC649A1}.Release|x86.ActiveCfg = Release|Any CPU
 		{D5D92705-166D-4FE8-915A-3F359CC649A1}.Release|x86.Build.0 = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|x64.Build.0 = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Debug|x86.Build.0 = Debug|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|x64.ActiveCfg = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|x64.Build.0 = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|x86.ActiveCfg = Release|Any CPU
+		{A4ECA811-9570-428E-9943-A61B965F6ADC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

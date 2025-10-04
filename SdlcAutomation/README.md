@@ -8,8 +8,13 @@ Command-line tool for SDLC automation tasks.
   - **BaseCommand.cs**: Base class with helper methods for console output
   - **RootCommand.cs**: Root command configuration
   - **JiraCommand.cs**: JIRA integration commands
-- **Clients/Jira/**: JIRA Data Center REST API client
+  - **AzureDevOpsCommand.cs**: Azure DevOps integration commands
 - **Program.cs**: Application entry point
+
+## Dependencies
+
+- **SdlcAutomation.Jira**: JIRA Data Center REST API client (optional)
+- **SdlcAutomation.AzureDevOps**: Azure DevOps REST API client (optional)
 
 ## Running
 
