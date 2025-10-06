@@ -25,7 +25,41 @@ dotnet run -- --help
 # JIRA commands
 dotnet run -- jira --help
 dotnet run -- jira create --help
+dotnet run -- jira import-cucumber --help
+
+# Azure DevOps commands
+dotnet run -- ado --help
+dotnet run -- ado query --help
+dotnet run -- ado import-cucumber --help
 ```
+
+## Cucumber Test Results Import
+
+Import Cucumber test results to JIRA X-ray or Azure Test Plans:
+
+### JIRA X-ray Import
+
+```bash
+# Import Cucumber messages file to JIRA X-ray
+dotnet run -- jira import-cucumber \
+  --file path/to/cucumber-messages.ndjson \
+  --work-item PROJ-123
+```
+
+Requires `JIRA_BASE_URL` and `JIRA_PAT` environment variables.
+
+### Azure Test Plans Import
+
+```bash
+# Import Cucumber messages file to Azure Test Plans
+dotnet run -- ado import-cucumber \
+  --file path/to/cucumber-messages.ndjson \
+  --work-item 12345 \
+  --organization https://dev.azure.com/your-org \
+  --project YourProject
+```
+
+Requires `AZURE_DEVOPS_PAT` environment variable.
 
 ## Adding Commands
 
