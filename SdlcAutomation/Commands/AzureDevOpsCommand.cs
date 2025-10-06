@@ -2,6 +2,7 @@ using System.CommandLine;
 using SdlcAutomation.AzureDevOps;
 using SdlcAutomation.AzureDevOps.Models;
 using Spectre.Console;
+using Io.Cucumber.Messages;
 
 namespace SdlcAutomation.Commands;
 
@@ -74,6 +75,34 @@ public class AzureDevOpsCommand : BaseCommand
         );
         
         AddCommand(queryCommand);
+
+        // Add import-cucumber command
+        var importCucumberCommand = new Command("import-cucumber", "Import Cucumber messages file to Azure Test Plans");
+        
+        var fileOption = new Option<string>(
+            "--file",
+            "Path to the Cucumber messages file (NDJSON format)") { IsRequired = true };
+        
+        var workItemOption = new Option<string>(
+            "--work-item",
+            "Azure DevOps work item number to link the test results to") { IsRequired = true };
+        
+        var orgOptionImport = new Option<string>(
+            "--organization",
+            "Azure DevOps organization URL (e.g., https://dev.azure.com/your-org)") { IsRequired = true };
+        
+        var projectOptionImport = new Option<string>(
+            "--project",
+            "Project name") { IsRequired = true };
+
+        importCucumberCommand.AddOption(fileOption);
+        importCucumberCommand.AddOption(workItemOption);
+        importCucumberCommand.AddOption(orgOptionImport);
+        importCucumberCommand.AddOption(projectOptionImport);
+
+        importCucumberCommand.SetHandler(ImportCucumber, fileOption, workItemOption, orgOptionImport, projectOptionImport);
+        
+        AddCommand(importCucumberCommand);
     }
     
     private async Task ExecuteQueryAsync(
@@ -182,6 +211,86 @@ public class AzureDevOpsCommand : BaseCommand
         catch (Exception ex)
         {
             WriteError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task ImportCucumber(string file, string workItem, string organization, string project)
+    {
+        try
+        {
+            // Check if file exists
+            if (!File.Exists(file))
+            {
+                WriteError($"File not found: {file}");
+                return;
+            }
+
+            WriteInfo($"Reading Cucumber messages from: {file}");
+
+            var envelopes = new List<Envelope>();
+            
+            // Read NDJSON file (one JSON object per line)
+            using (var reader = new StreamReader(file))
+            {
+                string? line;
+                int lineNumber = 0;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    lineNumber++;
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    try
+                    {
+                        var envelope = Envelope.Parser.ParseJson(line);
+                        envelopes.Add(envelope);
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteWarning($"Failed to parse line {lineNumber}: {ex.Message}");
+                    }
+                }
+            }
+
+            if (!envelopes.Any())
+            {
+                WriteError("No valid Cucumber messages found in file");
+                return;
+            }
+
+            WriteSuccess($"Parsed {envelopes.Count} Cucumber messages");
+
+            // Extract test results summary
+            var testCases = envelopes.Where(e => e.TestCase != null).Select(e => e.TestCase).ToList();
+            var testStepFinished = envelopes.Where(e => e.TestStepFinished != null).Select(e => e.TestStepFinished).ToList();
+            
+            WriteInfo($"Found {testCases.Count} test cases");
+            WriteInfo($"Found {testStepFinished.Count} test step results");
+
+            WriteInfo($"Connecting to Azure DevOps organization: {organization}");
+            WriteInfo($"Project: {project}");
+            WriteInfo($"Importing test results to work item: {workItem}");
+
+            // Note: This is a placeholder for actual Azure Test Plans API integration
+            // Azure Test Plans has specific endpoints for importing test results
+            // The actual implementation would require Azure Test Plans REST API client
+            WriteWarning("Azure Test Plans API integration not yet implemented");
+            WriteInfo("The command has successfully parsed the Cucumber messages file");
+            WriteInfo($"To complete the import, you would need to:");
+            WriteInfo($"  1. Use the Azure Test Plans REST API");
+            WriteInfo($"  2. Create test runs and test results");
+            WriteInfo($"  3. Link the results to work item: {workItem}");
+            WriteInfo($"  4. Send the parsed test results in Azure's expected format");
+
+            await Task.CompletedTask;
+        }
+        catch (FileNotFoundException ex)
+        {
+            WriteError($"File not found: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            WriteError($"Unexpected error: {ex.Message}");
         }
     }
 }
