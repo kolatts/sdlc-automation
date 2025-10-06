@@ -2,6 +2,14 @@
 
 Command-line tool for SDLC automation tasks.
 
+## Project Structure
+
+- **SdlcAutomation**: Main CLI application
+- **SdlcAutomation.Jira**: JIRA Data Center REST API client library
+- **SdlcAutomation.AzureDevOps**: Azure DevOps REST API client library
+
+The client libraries are separate projects that can be optionally referenced, with each library managing its own package dependencies.
+
 ## Building
 
 ```bash

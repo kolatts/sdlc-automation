@@ -15,8 +15,8 @@ Set environment variables:
 The `Issue` model can be used for both creating and retrieving issues:
 
 ```csharp
-using SdlcAutomation.Clients.Jira;
-using SdlcAutomation.Clients.Jira.Models;
+using SdlcAutomation.Jira;
+using SdlcAutomation.Jira.Models;
 
 // Create client
 using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
@@ -67,7 +67,7 @@ var bug = await client.CreateIssueAsync(
 ### Dependency Injection (for API/Web apps)
 
 ```csharp
-using SdlcAutomation.Clients.Jira;
+using SdlcAutomation.Jira;
 
 // In Startup.cs or Program.cs
 services.AddJiraClient(); // Uses JIRA_BASE_URL and JIRA_PAT env vars

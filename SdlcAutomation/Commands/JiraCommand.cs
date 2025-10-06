@@ -1,6 +1,6 @@
 using System.CommandLine;
-using SdlcAutomation.Clients.Jira;
-using SdlcAutomation.Clients.Jira.Models;
+using SdlcAutomation.Jira;
+using SdlcAutomation.Jira.Models;
 using Spectre.Console;
 
 namespace SdlcAutomation.Commands;

@@ -1,4 +1,4 @@
-namespace SdlcAutomation.Clients.Jira.Models;
+namespace SdlcAutomation.Jira.Models;
 
 /// <summary>
 /// Represents a JIRA API error response
