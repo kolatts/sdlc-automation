@@ -74,6 +74,34 @@ public class AzureDevOpsCommand : BaseCommand
         );
         
         AddCommand(queryCommand);
+
+        // Add import-cucumber command
+        var importCucumberCommand = new Command("import-cucumber", "Import Cucumber messages file to Azure Test Plans");
+        
+        var fileOption = new Option<string>(
+            "--file",
+            "Path to the Cucumber messages file (NDJSON format)") { IsRequired = true };
+        
+        var workItemOption = new Option<string>(
+            "--work-item",
+            "Azure DevOps work item number to link the test results to") { IsRequired = true };
+        
+        var orgOptionImport = new Option<string>(
+            "--organization",
+            "Azure DevOps organization URL (e.g., https://dev.azure.com/your-org)") { IsRequired = true };
+        
+        var projectOptionImport = new Option<string>(
+            "--project",
+            "Project name") { IsRequired = true };
+
+        importCucumberCommand.AddOption(fileOption);
+        importCucumberCommand.AddOption(workItemOption);
+        importCucumberCommand.AddOption(orgOptionImport);
+        importCucumberCommand.AddOption(projectOptionImport);
+
+        importCucumberCommand.SetHandler(ImportCucumber, fileOption, workItemOption, orgOptionImport, projectOptionImport);
+        
+        AddCommand(importCucumberCommand);
     }
     
     private async Task ExecuteQueryAsync(
@@ -182,6 +210,55 @@ public class AzureDevOpsCommand : BaseCommand
         catch (Exception ex)
         {
             WriteError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task ImportCucumber(string file, string workItem, string organization, string project)
+    {
+        try
+        {
+            // Check if file exists
+            if (!File.Exists(file))
+            {
+                WriteError($"File not found: {file}");
+                return;
+            }
+
+            WriteInfo($"Reading Cucumber test results from: {file}");
+
+            // Read the entire file content
+            var cucumberJson = await File.ReadAllTextAsync(file);
+            
+            if (string.IsNullOrWhiteSpace(cucumberJson))
+            {
+                WriteError("File is empty");
+                return;
+            }
+
+            WriteSuccess($"Read Cucumber test results file ({cucumberJson.Length} bytes)");
+
+            WriteInfo($"Connecting to Azure DevOps organization: {organization}");
+            WriteInfo($"Project: {project}");
+            WriteInfo($"Importing test results to work item: {workItem}");
+
+            // Note: This is a placeholder for actual Azure Test Plans API integration
+            // Azure Test Plans has specific endpoints for importing test results
+            // The actual implementation would require Azure Test Plans REST API client
+            WriteWarning("Azure Test Plans API integration not yet implemented");
+            WriteInfo("To complete the import, you would need to:");
+            WriteInfo("  1. Use the Azure Test Plans REST API to create test runs");
+            WriteInfo("  2. Parse the Cucumber JSON to create test results");
+            WriteInfo($"  3. Link the results to work item: {workItem}");
+
+            await Task.CompletedTask;
+        }
+        catch (FileNotFoundException ex)
+        {
+            WriteError($"File not found: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            WriteError($"Unexpected error: {ex.Message}");
         }
     }
 }

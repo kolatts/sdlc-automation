@@ -36,6 +36,24 @@ public class JiraCommand : BaseCommand
         createCommand.SetHandler(CreateIssue, projectOption, typeOption, summaryOption, descriptionOption);
         
         AddCommand(createCommand);
+
+        // Add import-cucumber command
+        var importCucumberCommand = new Command("import-cucumber", "Import Cucumber messages file to JIRA X-ray");
+        
+        var fileOption = new Option<string>(
+            "--file",
+            "Path to the Cucumber messages file (NDJSON format)") { IsRequired = true };
+        
+        var workItemOption = new Option<string>(
+            "--work-item",
+            "JIRA work item number to link the test results to") { IsRequired = true };
+
+        importCucumberCommand.AddOption(fileOption);
+        importCucumberCommand.AddOption(workItemOption);
+
+        importCucumberCommand.SetHandler(ImportCucumber, fileOption, workItemOption);
+        
+        AddCommand(importCucumberCommand);
     }
 
     private async Task CreateIssue(string project, string type, string summary, string? description)
@@ -95,6 +113,67 @@ public class JiraCommand : BaseCommand
         catch (HttpRequestException ex)
         {
             WriteError($"API error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            WriteError($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private async Task ImportCucumber(string file, string workItem)
+    {
+        try
+        {
+            // Check if file exists
+            if (!File.Exists(file))
+            {
+                WriteError($"File not found: {file}");
+                return;
+            }
+
+            WriteInfo($"Reading Cucumber test results from: {file}");
+
+            // Read the entire file content - X-ray expects the Cucumber JSON/NDJSON as-is
+            var cucumberJson = await File.ReadAllTextAsync(file);
+            
+            if (string.IsNullOrWhiteSpace(cucumberJson))
+            {
+                WriteError("File is empty");
+                return;
+            }
+
+            WriteSuccess($"Read Cucumber test results file ({cucumberJson.Length} bytes)");
+
+            var baseUrl = Environment.GetEnvironmentVariable("JIRA_BASE_URL");
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                WriteError("JIRA_BASE_URL environment variable is not set.");
+                WriteInfo("Set it to your JIRA instance URL (e.g., https://jira.example.com)");
+                return;
+            }
+
+            WriteInfo($"Connecting to JIRA X-ray at: {baseUrl}");
+            
+            using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
+            
+            WriteInfo($"Importing test results to X-ray (linking to work item: {workItem})...");
+
+            var result = await client.ImportCucumberTestResultsAsync(cucumberJson, workItem);
+
+            WriteSuccess("Successfully imported Cucumber test results to JIRA X-ray");
+            WriteInfo($"Response: {result}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            WriteError($"Configuration error: {ex.Message}");
+        }
+        catch (HttpRequestException ex)
+        {
+            WriteError($"API error: {ex.Message}");
+        }
+        catch (FileNotFoundException ex)
+        {
+            WriteError($"File not found: {ex.Message}");
         }
         catch (Exception ex)
         {
