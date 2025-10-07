@@ -2,8 +2,6 @@ using System.CommandLine;
 using SdlcAutomation.Jira;
 using SdlcAutomation.Jira.Models;
 using Spectre.Console;
-using Io.Cucumber.Messages;
-using Google.Protobuf;
 
 namespace SdlcAutomation.Commands;
 
@@ -133,47 +131,18 @@ public class JiraCommand : BaseCommand
                 return;
             }
 
-            WriteInfo($"Reading Cucumber messages from: {file}");
+            WriteInfo($"Reading Cucumber test results from: {file}");
 
-            var envelopes = new List<Envelope>();
+            // Read the entire file content - X-ray expects the Cucumber JSON/NDJSON as-is
+            var cucumberJson = await File.ReadAllTextAsync(file);
             
-            // Read NDJSON file (one JSON object per line)
-            using (var reader = new StreamReader(file))
+            if (string.IsNullOrWhiteSpace(cucumberJson))
             {
-                string? line;
-                int lineNumber = 0;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    lineNumber++;
-                    if (string.IsNullOrWhiteSpace(line))
-                        continue;
-
-                    try
-                    {
-                        var envelope = Envelope.Parser.ParseJson(line);
-                        envelopes.Add(envelope);
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteWarning($"Failed to parse line {lineNumber}: {ex.Message}");
-                    }
-                }
-            }
-
-            if (!envelopes.Any())
-            {
-                WriteError("No valid Cucumber messages found in file");
+                WriteError("File is empty");
                 return;
             }
 
-            WriteSuccess($"Parsed {envelopes.Count} Cucumber messages");
-
-            // Extract test results summary
-            var testCases = envelopes.Where(e => e.TestCase != null).Select(e => e.TestCase).ToList();
-            var testStepFinished = envelopes.Where(e => e.TestStepFinished != null).Select(e => e.TestStepFinished).ToList();
-            
-            WriteInfo($"Found {testCases.Count} test cases");
-            WriteInfo($"Found {testStepFinished.Count} test step results");
+            WriteSuccess($"Read Cucumber test results file ({cucumberJson.Length} bytes)");
 
             var baseUrl = Environment.GetEnvironmentVariable("JIRA_BASE_URL");
             if (string.IsNullOrWhiteSpace(baseUrl))
@@ -183,20 +152,24 @@ public class JiraCommand : BaseCommand
                 return;
             }
 
-            WriteInfo($"Connecting to JIRA at: {baseUrl}");
-            WriteInfo($"Importing test results to work item: {workItem}");
+            WriteInfo($"Connecting to JIRA X-ray at: {baseUrl}");
+            
+            using var client = JiraApiClient.CreateFromEnvironment(baseUrl);
+            
+            WriteInfo($"Importing test results to X-ray (linking to work item: {workItem})...");
 
-            // Note: This is a placeholder for actual X-ray API integration
-            // X-ray has specific endpoints for importing test results
-            // The actual implementation would require X-ray REST API client
-            WriteWarning("X-ray API integration not yet implemented");
-            WriteInfo("The command has successfully parsed the Cucumber messages file");
-            WriteInfo($"To complete the import, you would need to:");
-            WriteInfo($"  1. Use the X-ray REST API endpoint: POST /rest/raven/2.0/import/execution/cucumber");
-            WriteInfo($"  2. Link the results to work item: {workItem}");
-            WriteInfo($"  3. Send the parsed test results in X-ray's expected format");
+            var result = await client.ImportCucumberTestResultsAsync(cucumberJson, workItem);
 
-            await Task.CompletedTask;
+            WriteSuccess("Successfully imported Cucumber test results to JIRA X-ray");
+            WriteInfo($"Response: {result}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            WriteError($"Configuration error: {ex.Message}");
+        }
+        catch (HttpRequestException ex)
+        {
+            WriteError($"API error: {ex.Message}");
         }
         catch (FileNotFoundException ex)
         {

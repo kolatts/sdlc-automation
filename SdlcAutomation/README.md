@@ -40,26 +40,30 @@ Import Cucumber test results to JIRA X-ray or Azure Test Plans:
 ### JIRA X-ray Import
 
 ```bash
-# Import Cucumber messages file to JIRA X-ray
+# Import Cucumber JSON/NDJSON file to JIRA X-ray
 dotnet run -- jira import-cucumber \
-  --file path/to/cucumber-messages.ndjson \
+  --file path/to/cucumber-results.json \
   --work-item PROJ-123
 ```
+
+The file should contain Cucumber test results in JSON or NDJSON format. The command sends the file content directly to JIRA X-ray's import endpoint without parsing or modification.
 
 Requires `JIRA_BASE_URL` and `JIRA_PAT` environment variables.
 
 ### Azure Test Plans Import
 
 ```bash
-# Import Cucumber messages file to Azure Test Plans
+# Import Cucumber test results to Azure Test Plans
 dotnet run -- ado import-cucumber \
-  --file path/to/cucumber-messages.ndjson \
+  --file path/to/cucumber-results.json \
   --work-item 12345 \
   --organization https://dev.azure.com/your-org \
   --project YourProject
 ```
 
 Requires `AZURE_DEVOPS_PAT` environment variable.
+
+**Note**: Azure Test Plans integration is a placeholder and requires additional implementation.
 
 ## Adding Commands
 

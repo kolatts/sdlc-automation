@@ -173,6 +173,45 @@ public class JiraApiClient : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// Import Cucumber test results to JIRA X-ray
+    /// </summary>
+    /// <param name="cucumberJson">Cucumber JSON content (NDJSON or JSON format)</param>
+    /// <param name="testExecutionKey">Optional test execution issue key to link results to</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Response from X-ray API containing created/updated test execution details</returns>
+    public async Task<string> ImportCucumberTestResultsAsync(
+        string cucumberJson,
+        string? testExecutionKey = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(cucumberJson))
+            throw new ArgumentException("Cucumber JSON content cannot be null or empty", nameof(cucumberJson));
+
+        // X-ray Cucumber import endpoint
+        var endpoint = "/rest/raven/2.0/import/execution/cucumber";
+        
+        // Add test execution key as query parameter if provided
+        if (!string.IsNullOrWhiteSpace(testExecutionKey))
+        {
+            endpoint += $"?testExecKey={Uri.EscapeDataString(testExecutionKey)}";
+        }
+
+        var content = new StringContent(cucumberJson, System.Text.Encoding.UTF8, "application/json");
+        
+        var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(
+                $"Failed to import Cucumber test results to X-ray. Status: {response.StatusCode}. Error: {errorContent}");
+        }
+
+        var result = await response.Content.ReadAsStringAsync(cancellationToken);
+        return result;
+    }
+
     public void Dispose()
     {
         if (!_disposed)
