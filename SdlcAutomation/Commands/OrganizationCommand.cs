@@ -10,11 +10,11 @@ namespace SdlcAutomation.Commands;
 /// </summary>
 public class OrganizationCommand : BaseCommand
 {
-    private readonly OrganizationConfigService _configService;
+    private readonly CliSettingsService _settingsService;
 
     public OrganizationCommand() : base("org", "Manage organization configurations")
     {
-        _configService = new OrganizationConfigService();
+        _settingsService = new CliSettingsService();
 
         // Add subcommands
         AddCommand(CreateAddCommand());
@@ -173,7 +173,7 @@ public class OrganizationCommand : BaseCommand
             await ExecuteWithTimingAsync("Add organization", async () =>
             {
                 // Check if organization already exists
-                var existing = await _configService.GetOrganizationAsync(name);
+                var existing = await _settingsService.GetOrganizationAsync(name);
                 if (existing != null)
                 {
                     WriteWarning($"Organization '{name}' already exists. Use 'org show --name {name}' to view it.");
@@ -186,9 +186,9 @@ public class OrganizationCommand : BaseCommand
                     Description = description
                 };
 
-                await _configService.SaveOrganizationAsync(org);
+                await _settingsService.SaveOrganizationAsync(org);
                 WriteSuccess($"Added organization: {name}");
-                WriteInfo($"Configuration saved to: {_configService.GetConfigPath()}");
+                WriteInfo($"Configuration saved to: {_settingsService.GetConfigPath()}");
                 WriteInfo($"\nNext steps:");
                 WriteInfo($"  • Configure GitHub: sdlc org set-github --name {name}");
                 WriteInfo($"  • Configure Jira: sdlc org set-jira --name {name}");
@@ -207,7 +207,8 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("List organizations", async () =>
             {
-                var organizations = await _configService.LoadOrganizationsAsync();
+                var settings = await _settingsService.LoadSettingsAsync();
+                var organizations = settings.Organizations;
 
                 if (!organizations.Any())
                 {
@@ -238,7 +239,7 @@ public class OrganizationCommand : BaseCommand
 
                 AnsiConsole.Write(table);
                 WriteInfo($"\nTotal: {organizations.Count} organization(s)");
-                WriteInfo($"Config file: {_configService.GetConfigPath()}");
+                WriteInfo($"Config file: {_settingsService.GetConfigPath()}");
             });
         }
         catch (Exception ex)
@@ -253,7 +254,7 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("Show organization", async () =>
             {
-                var org = await _configService.GetOrganizationAsync(name);
+                var org = await _settingsService.GetOrganizationAsync(name);
 
                 if (org == null)
                 {
@@ -339,7 +340,7 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("Remove organization", async () =>
             {
-                var removed = await _configService.DeleteOrganizationAsync(name);
+                var removed = await _settingsService.DeleteOrganizationAsync(name);
 
                 if (removed)
                 {
@@ -364,7 +365,7 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("Set GitHub configuration", async () =>
             {
-                var org = await _configService.GetOrganizationAsync(name);
+                var org = await _settingsService.GetOrganizationAsync(name);
 
                 if (org == null)
                 {
@@ -387,7 +388,7 @@ public class OrganizationCommand : BaseCommand
                 else if (string.IsNullOrEmpty(org.GitHub.PatEnvironmentVariable))
                     org.GitHub.PatEnvironmentVariable = $"{name.ToUpperInvariant()}_GITHUB_PAT";
 
-                await _configService.SaveOrganizationAsync(org);
+                await _settingsService.SaveOrganizationAsync(org);
 
                 WriteSuccess($"GitHub configuration updated for organization: {name}");
                 WriteInfo($"\nEnvironment variable for PAT: {org.GitHub.PatEnvironmentVariable}");
@@ -416,7 +417,7 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("Set Jira configuration", async () =>
             {
-                var org = await _configService.GetOrganizationAsync(name);
+                var org = await _settingsService.GetOrganizationAsync(name);
 
                 if (org == null)
                 {
@@ -436,7 +437,7 @@ public class OrganizationCommand : BaseCommand
                 else if (string.IsNullOrEmpty(org.Jira.PatEnvironmentVariable))
                     org.Jira.PatEnvironmentVariable = $"{name.ToUpperInvariant()}_JIRA_PAT";
 
-                await _configService.SaveOrganizationAsync(org);
+                await _settingsService.SaveOrganizationAsync(org);
 
                 WriteSuccess($"Jira configuration updated for organization: {name}");
                 WriteInfo($"\nEnvironment variable for PAT: {org.Jira.PatEnvironmentVariable}");
@@ -465,7 +466,7 @@ public class OrganizationCommand : BaseCommand
         {
             await ExecuteWithTimingAsync("Set Azure DevOps configuration", async () =>
             {
-                var org = await _configService.GetOrganizationAsync(name);
+                var org = await _settingsService.GetOrganizationAsync(name);
 
                 if (org == null)
                 {
@@ -488,7 +489,7 @@ public class OrganizationCommand : BaseCommand
                 else if (string.IsNullOrEmpty(org.AzureDevOps.PatEnvironmentVariable))
                     org.AzureDevOps.PatEnvironmentVariable = $"{name.ToUpperInvariant()}_AZURE_DEVOPS_PAT";
 
-                await _configService.SaveOrganizationAsync(org);
+                await _settingsService.SaveOrganizationAsync(org);
 
                 WriteSuccess($"Azure DevOps configuration updated for organization: {name}");
                 WriteInfo($"\nEnvironment variable for PAT: {org.AzureDevOps.PatEnvironmentVariable}");

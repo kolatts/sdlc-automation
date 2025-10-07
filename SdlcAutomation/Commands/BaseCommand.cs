@@ -1,98 +1,58 @@
 using System.CommandLine;
-using System.Diagnostics;
-using Spectre.Console;
+using SdlcAutomation.Services;
 
 namespace SdlcAutomation.Commands;
 
 public abstract class BaseCommand : Command
 {
+    protected readonly ConsoleLogger Logger = new();
+
     protected BaseCommand(string name, string? description = null)
         : base(name, description)
     {
     }
 
-    protected void WriteSuccess(string message)
-    {
-        AnsiConsole.MarkupLine($"[green]✓[/] {message}");
-    }
-
-    protected void WriteError(string message)
-    {
-        AnsiConsole.MarkupLine($"[red]✗[/] {message}");
-    }
-
-    protected void WriteInfo(string message)
-    {
-        AnsiConsole.MarkupLine($"[blue]ℹ[/] {message}");
-    }
-
-    protected void WriteWarning(string message)
-    {
-        AnsiConsole.MarkupLine($"[yellow]⚠[/] {message}");
-    }
-
     /// <summary>
-    /// Execute an operation with timing tracking
+    /// Write a success message (backward compatibility)
     /// </summary>
-    protected async Task<T> ExecuteWithTimingAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        var stopwatch = Stopwatch.StartNew();
-        try
-        {
-            WriteInfo($"Starting: {operationName}");
-            var result = await operation();
-            stopwatch.Stop();
-            WriteSuccess($"Completed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-            return result;
-        }
-        catch
-        {
-            stopwatch.Stop();
-            WriteError($"Failed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-            throw;
-        }
-    }
+    protected void WriteSuccess(string message) => Logger.WriteSuccess(message);
 
     /// <summary>
-    /// Execute an operation with timing tracking (synchronous version)
+    /// Write an error message (backward compatibility)
+    /// </summary>
+    protected void WriteError(string message) => Logger.WriteError(message);
+
+    /// <summary>
+    /// Write an info message (backward compatibility)
+    /// </summary>
+    protected void WriteInfo(string message) => Logger.WriteInfo(message);
+
+    /// <summary>
+    /// Write a warning message (backward compatibility)
+    /// </summary>
+    protected void WriteWarning(string message) => Logger.WriteWarning(message);
+
+    /// <summary>
+    /// Execute an operation with timing tracking and spinner (async with return value)
+    /// </summary>
+    protected Task<T> ExecuteWithTimingAsync<T>(string operationName, Func<Task<T>> operation)
+        => Logger.ExecuteWithSpinnerAsync(operationName, operation);
+
+    /// <summary>
+    /// Execute an operation with timing tracking and spinner (async void)
+    /// </summary>
+    protected Task ExecuteWithTimingAsync(string operationName, Func<Task> operation)
+        => Logger.ExecuteWithSpinnerAsync(operationName, operation);
+
+    /// <summary>
+    /// Execute an operation with timing tracking and spinner (synchronous with return value)
     /// </summary>
     protected T ExecuteWithTiming<T>(string operationName, Func<T> operation)
-    {
-        var stopwatch = Stopwatch.StartNew();
-        try
-        {
-            WriteInfo($"Starting: {operationName}");
-            var result = operation();
-            stopwatch.Stop();
-            WriteSuccess($"Completed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-            return result;
-        }
-        catch
-        {
-            stopwatch.Stop();
-            WriteError($"Failed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-            throw;
-        }
-    }
+        => Logger.ExecuteWithSpinner(operationName, operation);
 
     /// <summary>
-    /// Execute an operation with timing tracking (void async version)
+    /// Execute an operation with timing tracking and spinner (synchronous void)
     /// </summary>
-    protected async Task ExecuteWithTimingAsync(string operationName, Func<Task> operation)
-    {
-        var stopwatch = Stopwatch.StartNew();
-        try
-        {
-            WriteInfo($"Starting: {operationName}");
-            await operation();
-            stopwatch.Stop();
-            WriteSuccess($"Completed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-        }
-        catch
-        {
-            stopwatch.Stop();
-            WriteError($"Failed: {operationName} (took {stopwatch.ElapsedMilliseconds}ms)");
-            throw;
-        }
-    }
+    protected void ExecuteWithTiming(string operationName, Action operation)
+        => Logger.ExecuteWithSpinner(operationName, operation);
 }
