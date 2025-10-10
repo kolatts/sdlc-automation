@@ -173,6 +173,25 @@ public class JiraApiClient : IDisposable
         return result;
     }
 
+    public async Task<User> GetCurrentUserAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/rest/api/2/myself", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(
+                $"Failed to get current user. Status: {response.StatusCode}. Error: {errorContent}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<User>(_jsonOptions, cancellationToken);
+        
+        if (result == null)
+            throw new InvalidOperationException("Failed to deserialize current user");
+
+        return result;
+    }
+
     public void Dispose()
     {
         if (!_disposed)
