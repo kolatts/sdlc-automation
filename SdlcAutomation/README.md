@@ -25,6 +25,15 @@ dotnet run -- --help
 # JIRA commands
 dotnet run -- jira --help
 dotnet run -- jira create --help
+dotnet run -- jira ado-to-jira --help
+
+# Example: Convert Azure DevOps work item to JIRA
+dotnet run -- jira ado-to-jira \
+  --ado-organization https://dev.azure.com/your-org \
+  --ado-project YourProject \
+  --work-item-id 12345 \
+  --jira-project PROJ \
+  --jira-issue-type Story
 ```
 
 ## Adding Commands
