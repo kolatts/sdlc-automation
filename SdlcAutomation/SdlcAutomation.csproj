@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SdlcAutomation.AzureDevOps\SdlcAutomation.AzureDevOps.csproj" />
     <ProjectReference Include="..\SdlcAutomation.Jira\SdlcAutomation.Jira.csproj" />
+    <ProjectReference Include="..\SdlcAutomation.GitHub\SdlcAutomation.GitHub.csproj" />
   </ItemGroup>
 
 </Project>
